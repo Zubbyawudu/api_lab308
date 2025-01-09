@@ -1,17 +1,18 @@
-import * as Carousel from "./Carousel.js";
-import axios from "axios";
+import * as Carousel from './Carousel.js';
+// You have axios, you don't need to import it
+console.log(axios);
 
 // The breed selection input element.
-const breedSelect = document.getElementById("breedSelect");
+const breedSelect = document.getElementById('breedSelect');
 // The information section div element.
-const infoDump = document.getElementById("infoDump");
+const infoDump = document.getElementById('infoDump');
 // The progress bar div element.
-const progressBar = document.getElementById("progressBar");
+const progressBar = document.getElementById('progressBar');
 // The get favourites button element.
-const getFavouritesBtn = document.getElementById("getFavouritesBtn");
+const getFavouritesBtn = document.getElementById('getFavouritesBtn');
 
 // Step 0: Store your API key here for reference and easy access.
-const API_KEY = "";
+const API_KEY = 'live_ozZVUOZApPJuZPF9IKxqBl4NJm2vhvROFOhgOaHR2GWPEVyxEz2UfYcOrNBTxJbA';
 
 /**
  * 1. Create an async function "initialLoad" that does the following:
@@ -21,6 +22,26 @@ const API_KEY = "";
  *  - Each option should display text equal to the name of the breed.
  * This function should execute immediately.
  */
+
+  async function initialLoad() {
+    try {
+      const response = await fetch('https://api.thecatapi.com/v1/breeds')
+      const breed = await response.json()
+      console.log(breed);
+
+      
+      for (let i = 0; i < breed.length; i++){
+        const option = document.createElement("option");
+        option.value = breed[i].id;
+        option.textContent = breed[i].name;
+        breedSelect.appendChild(option);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    
+  }
+  initialLoad()
 
 /**
  * 2. Create an event handler for breedSelect that does the following:
@@ -36,6 +57,7 @@ const API_KEY = "";
  * - Each new selection should clear, re-populate, and restart the Carousel.
  * - Add a call to this function to the end of your initialLoad function above to create the initial carousel.
  */
+
 
 /**
  * 3. Fork your own sandbox, creating a new one named "JavaScript Axios Lab."
