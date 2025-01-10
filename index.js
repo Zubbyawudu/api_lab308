@@ -1,3 +1,4 @@
+// import axios from 'axios';
 import * as Carousel from './Carousel.js';
 // You have axios, you don't need to import it
 console.log(axios);
@@ -23,25 +24,25 @@ const API_KEY = 'live_ozZVUOZApPJuZPF9IKxqBl4NJm2vhvROFOhgOaHR2GWPEVyxEz2UfYcOrN
  * This function should execute immediately.
  */
 
-  async function initialLoad() {
-    try {
-      const response = await fetch('https://api.thecatapi.com/v1/breeds')
-      const breed = await response.json()
-      console.log(breed);
+  // async function initialLoad() {
+  //   try {
+  //     const response = await fetch('https://api.thecatapi.com/v1/breeds')
+  //     const breed = await response.json()
+  //     console.log(breed);
 
       
-      for (let i = 0; i < breed.length; i++){
-        const option = document.createElement("option");
-        option.value = breed[i].id;
-        option.textContent = breed[i].name;
-        breedSelect.appendChild(option);
-      }
-    } catch (error) {
-      console.log(error);
-    }
+  //     for (let i = 0; i < breed.length; i++){
+  //       const option = document.createElement("option");
+  //       option.value = breed[i].id;
+  //       option.textContent = breed[i].name;
+  //       breedSelect.appendChild(option);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
     
-  }
-  initialLoad()
+  // }
+  // initialLoad()
 
 /**
  * 2. Create an event handler for breedSelect that does the following:
@@ -58,42 +59,43 @@ const API_KEY = 'live_ozZVUOZApPJuZPF9IKxqBl4NJm2vhvROFOhgOaHR2GWPEVyxEz2UfYcOrN
  * - Add a call to this function to the end of your initialLoad function above to create the initial carousel.
  */
 
-breedSelect.addEventListener('change',retrieveInfo)
+// breedSelect.addEventListener('change',retrieveInfo)
 
-async function retrieveInfo(event) {
-  try {
-    const request = await fetch(`https://api.thecatapi.com/v1/images/search?breed_ids=${breedSelect.value}&limit=10&api_key=${API_KEY}`)
-    console.log(request);
-    const response = await request.json()
-    console.log(response);
+// async function retrieveInfo(event) {
+//   try {
+//     const request = await fetch(`https://api.thecatapi.com/v1/images/search?breed_ids=${breedSelect.value}&limit=10&api_key=${API_KEY}`)
+//     console.log(request);
+//     const response = await request.json()
+//     console.log(response);
     
-    Carousel.clear()
+//     Carousel.clear()
 
-    for(let i = 0; i < response.length; i++){
-      const imgSrc = response[i].url
-      const imgAlt = `text of ${breedSelect.value}`
-      const imgId = response[i].id
-      const carouselItem = Carousel.createCarouselItem(imgSrc, imgAlt, imgId)
+//     for(let i = 0; i < response.length; i++){
+//       const imgSrc = response[i].url
+//       const imgAlt = `text of ${breedSelect.value}`
+//       const imgId = response[i].id
+//       const carouselItem = Carousel.createCarouselItem(imgSrc, imgAlt, imgId)
       
-      Carousel.appendCarousel(carouselItem)
+//       Carousel.appendCarousel(carouselItem)
 
-      if (response[i].breeds && response[i].breeds.length > 0) {
-        const breedDescription = response[i].breeds[0].description; 
-        infoDump.innerHTML += `<h2>${breedSelect.value}</h2>`;
-        infoDump.innerHTML += `<p>${breedDescription}</p>`;
-      }
-      
-        
+//       // if (response[i].breeds && response[i].breeds.length > 0) {
+//       //   const breedDescription = response[i].breeds[0].description; 
+//       //   infoDump.innerHTML += `<h2>${breedSelect.value}</h2>`;
+//       //   infoDump.innerHTML += `<p>${breedDescription}</p>`;
+//       // }
+
+//         infoDump.innerHTML = `<h2>${breedSelect.value}</h2>`;
+//         infoDump.innerHTML += `<p>${response[i].breeds[0].description}</p>`;
       
      
       
-    } 
+//     } 
     
-  } catch (error) {
-    console.log(error);
-  }
-}
-retrieveInfo()
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+// retrieveInfo()
 
 
 // At this point you need to Push your code to your own gitHub repo
@@ -110,6 +112,9 @@ retrieveInfo()
  *   by setting a default header with your API key so that you do not have to
  *   send it manually with all of your requests! You can also set a default base URL!
  */
+
+  
+
 /**
  * 5. Add axios interceptors to log the time between request and response to the console.
  * - Hint: you already have access to code that does this!
@@ -133,11 +138,91 @@ retrieveInfo()
  *   with for future projects.
  */
 
+axios.interceptors.request.use(request => {
+  request.metadata = request.metadata || {};
+  request.metadata.startTime = new Date().getTime();
+  return request;
+});
+
+axios.interceptors.response.use(
+  (response) => {
+      response.config.metadata.endTime = new Date().getTime();
+      response.config.metadata.durationInMS = response.config.metadata.endTime - response.config.metadata.startTime;
+
+      console.log(`Request took ${response.config.metadata.durationInMS} milliseconds.`)
+      return response;
+  },
+  (error) => {
+      error.config.metadata.endTime = new Date().getTime();
+      error.config.metadata.durationInMS = error.config.metadata.endTime - error.config.metadata.startTime;
+
+      console.log(`Request took ${error.config.metadata.durationInMS} milliseconds.`)
+      throw error;
+});
+
+async function initialLoad() {
+  try {
+    const response = await axios.get('https://api.thecatapi.com/v1/breeds')
+    const breed = response.data
+    console.log(breed);
+
+    
+    for (let i = 0; i < breed.length; i++){
+      const option = document.createElement("option");
+      option.value = breed[i].id;
+      option.textContent = breed[i].name;
+      breedSelect.appendChild(option);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  
+}
+initialLoad()
+breedSelect.addEventListener('change',retrieveInfo)
+
+async function retrieveInfo(event) {
+  try {
+    const request = await axios.get(`https://api.thecatapi.com/v1/images/search?breed_ids=${breedSelect.value}&limit=10&api_key=${API_KEY}`)
+    console.log(request);
+    const response = request.data
+    console.log(response);
+    
+    Carousel.clear()
+
+    for(let i = 0; i < response.length; i++){
+      const imgSrc = response[i].url
+      const imgAlt = `text of ${breedSelect.value}`
+      const imgId = response[i].id
+      const carouselItem = Carousel.createCarouselItem(imgSrc, imgAlt, imgId)
+      
+      Carousel.appendCarousel(carouselItem)
+
+      // if (response[i].breeds && response[i].breeds.length > 0) {
+      //   const breedDescription = response[i].breeds[0].description; 
+      //   infoDump.innerHTML += `<h2>${breedSelect.value}</h2>`;
+      //   infoDump.innerHTML += `<p>${breedDescription}</p>`;
+      // }
+
+        infoDump.innerHTML = `<h2>${breedSelect.value}</h2>`;
+        infoDump.innerHTML += `<p>${response[i].breeds[0].description}</p>`;
+      
+     
+      
+    } 
+    
+  } catch (error) {
+    console.log(error);
+  }
+}
+retrieveInfo()
+
 /**
  * 7. As a final element of progress indication, add the following to your axios interceptors:
  * - In your request interceptor, set the body element's cursor style to "progress."
  * - In your response interceptor, remove the progress cursor style from the body element.
  */
+
 /**
  * 8. To practice posting data, we'll create a system to "favourite" certain images.
  * - The skeleton of this function has already been created for you.
