@@ -58,7 +58,46 @@ const API_KEY = 'live_ozZVUOZApPJuZPF9IKxqBl4NJm2vhvROFOhgOaHR2GWPEVyxEz2UfYcOrN
  * - Add a call to this function to the end of your initialLoad function above to create the initial carousel.
  */
 
+breedSelect.addEventListener('change',retrieveInfo)
 
+async function retrieveInfo(event) {
+  try {
+    const request = await fetch(`https://api.thecatapi.com/v1/images/search?breed_ids=${breedSelect.value}&limit=10&api_key=${API_KEY}`)
+    console.log(request);
+    const response = await request.json()
+    console.log(response);
+    
+    Carousel.clear()
+
+    for(let i = 0; i < response.length; i++){
+      const imgSrc = response[i].url
+      const imgAlt = `text of ${breedSelect.value}`
+      const imgId = response[i].id
+      const carouselItem = Carousel.createCarouselItem(imgSrc, imgAlt, imgId)
+      
+      Carousel.appendCarousel(carouselItem)
+
+      if (response[i].breeds && response[i].breeds.length > 0) {
+        const breedDescription = response[i].breeds[0].description; 
+        infoDump.innerHTML += `<h2>${breedSelect.value}</h2>`;
+        infoDump.innerHTML += `<p>${breedDescription}</p>`;
+      }
+      
+        
+      
+     
+      
+    } 
+    
+  } catch (error) {
+    console.log(error);
+  }
+}
+retrieveInfo()
+
+
+// At this point you need to Push your code to your own gitHub repo
+// Go to the folder you cloned in today , clone your repo again and give it the name below JAVASCRIPT AXIOS FILE
 /**
  * 3. Fork your own sandbox, creating a new one named "JavaScript Axios Lab."
  */
