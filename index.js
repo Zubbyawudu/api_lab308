@@ -138,9 +138,31 @@ const API_KEY = 'live_ozZVUOZApPJuZPF9IKxqBl4NJm2vhvROFOhgOaHR2GWPEVyxEz2UfYcOrN
  *   with for future projects.
  */
 
+
+
+/**
+ * 7. As a final element of progress indication, add the following to your axios interceptors:
+ * - In your request interceptor, set the body element's cursor style to "progress."
+ * - In your response interceptor, remove the progress cursor style from the body element.
+ */
+
 axios.interceptors.request.use(request => {
   request.metadata = request.metadata || {};
   request.metadata.startTime = new Date().getTime();
+  progressBar.style.width = '0%';
+  console.log(`Request started at ${request.metadata.startTime}`)
+
+  // Progress Bar function 
+  function updateProgress(progressEvent) {
+    const complete = (progressEvent.loaded / progressEvent.total) * 100;
+    progressBar.style.width = `${complete}%`;
+    console.log(complete);
+  }
+
+  request.onDownloadProgress = updateProgress;
+  document.body.style.cursor = 'progress';
+
+
   return request;
 });
 
@@ -148,6 +170,8 @@ axios.interceptors.response.use(
   (response) => {
       response.config.metadata.endTime = new Date().getTime();
       response.config.metadata.durationInMS = response.config.metadata.endTime - response.config.metadata.startTime;
+
+      document.body.style.cursor = '';
 
       console.log(`Request took ${response.config.metadata.durationInMS} milliseconds.`)
       return response;
@@ -218,12 +242,6 @@ async function retrieveInfo(event) {
 retrieveInfo()
 
 /**
- * 7. As a final element of progress indication, add the following to your axios interceptors:
- * - In your request interceptor, set the body element's cursor style to "progress."
- * - In your response interceptor, remove the progress cursor style from the body element.
- */
-
-/**
  * 8. To practice posting data, we'll create a system to "favourite" certain images.
  * - The skeleton of this function has already been created for you.
  * - This function is used within Carousel.js to add the event listener as items are created.
@@ -236,7 +254,39 @@ retrieveInfo()
  */
 export async function favourite(imgId) {
   // your code here
+  try {
+
+    const favourites = [];
+    const favImg = await axios.post(`https://api.thecatapi.com/v1/favourites`, { 
+      image_id: imgId, 
+      sub_id: 'test',
+      api_key: API_KEY
+    });
+    
+    if (favourites.includes(imgId)) {
+      // Delete the favourite if the image is already favourited
+      await axios.delete(`https://api.thecatapi.com/v1/favourites/${imgId}`, {
+        api_key: API_KEY
+      });
+      favourites.splice(favourites.indexOf(imgId), 1);
+    } else {
+      // Add the favourite if the image is not already favourited
+      favourites.push(imgId);
+    }
+
+    console.log(favImg);
+    console.log(favImg.data);
+
+    
+  } catch (error) {
+    console.log(error);
+    
+  }
+  
+  
 }
+
+
 
 /**
  * 9. Test your favourite() function by creating a getFavourites() function.
